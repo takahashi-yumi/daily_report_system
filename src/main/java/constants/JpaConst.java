@@ -29,6 +29,7 @@ public interface JpaConst {
     int EMP_DEL_TRUE = 1; //削除フラグON(削除済み)
     int EMP_DEL_FALSE = 0; //削除フラグOFF(現役)
 
+
     //日報テーブル
     String TABLE_REP = "reports"; //テーブル名
     //日報テーブルカラム
@@ -39,15 +40,31 @@ public interface JpaConst {
     String REP_COL_CONTENT = "content"; //日報の内容
     String REP_COL_CREATED_AT = "created_at"; //登録日時
     String REP_COL_UPDATED_AT = "updated_at"; //更新日時
+    String REP_COL_LIKE_COUNT = "like_count"; //いいね数
+
+  //いいねテーブル
+    String TABLE_LIK = "likecounts"; //テーブル名
+    //いいねテーブルカラム
+    String LIK_COL_ID = "id"; //id
+    String LIK_COL_EMP = "employee_id"; //いいねした従業員のid
+    String LIK_COL_REP_ID = "report_id"; //日報の識別番号
+    String LIK_COL_CREATED_AT = "created_at"; //登録日時
+    String LIK_COL_UPDATED_AT = "updated_at"; //更新日時
+
 
     //Entity名
     String ENTITY_EMP = "employee"; //従業員
     String ENTITY_REP = "report"; //日報
+    String ENTITY_LIK = "like"; //いいね
+
 
     //JPQL内パラメータ
     String JPQL_PARM_CODE = "code"; //社員番号
     String JPQL_PARM_PASSWORD = "password"; //パスワード
     String JPQL_PARM_EMPLOYEE = "employee"; //従業員
+    String JPQL_PARM_REPORT = "report"; //日報
+    String JPQL_PARM_LIKE = "like"; //いいね
+
 
     //NamedQueryの nameとquery
     //全ての従業員をidの降順に取得する
@@ -62,6 +79,8 @@ public interface JpaConst {
     //指定した社員番号を保持する従業員の件数を取得する
     String Q_EMP_COUNT_RESISTERED_BY_CODE = ENTITY_EMP + ".countRegisteredByCode";
     String Q_EMP_COUNT_RESISTERED_BY_CODE_DEF = "SELECT COUNT(e) FROM Employee AS e WHERE e.code = :" + JPQL_PARM_CODE;
+
+
     //全ての日報をidの降順に取得する
     String Q_REP_GET_ALL = ENTITY_REP + ".getAll";
     String Q_REP_GET_ALL_DEF = "SELECT r FROM Report AS r ORDER BY r.id DESC";
@@ -74,5 +93,20 @@ public interface JpaConst {
     //指定した従業員が作成した日報の件数を取得する
     String Q_REP_COUNT_ALL_MINE = ENTITY_REP + ".countAllMine";
     String Q_REP_COUNT_ALL_MINE_DEF = "SELECT COUNT(r) FROM Report AS r WHERE r.employee = :" + JPQL_PARM_EMPLOYEE;
+
+
+  //全てのいいねをidの降順に取得する
+    String Q_LIK_GET_ALL = ENTITY_LIK + ".getAll";
+    String Q_LIK_GET_ALL_DEF = "SELECT l FROM Like AS l ORDER BY l.id DESC";
+    //全てのいいねの件数を取得する
+    String Q_LIK_COUNT = ENTITY_LIK + ".count";
+    String Q_LIK_COUNT_DEF = "SELECT COUNT(l) FROM Like AS l";
+    //指定した日報をいいねした従業員数を全件idの降順で取得する
+    String Q_LIK_GET_ALL_MINE = ENTITY_LIK + ".getAllMine";
+    String Q_LIK_GET_ALL_MINE_DEF = "SELECT l FROM Like AS l WHERE l.report = :" + JPQL_PARM_REPORT + " ORDER BY l.id DESC";
+    //指定した日報にいいねした従業員の件数を取得する
+    String Q_LIK_COUNT_ALL_MINE = ENTITY_LIK + ".countAllMine";
+    String Q_LIK_COUNT_ALL_MINE_DEF = "SELECT COUNT(l) FROM Like AS l WHERE l.report = :" + JPQL_PARM_REPORT;
+
 
 }

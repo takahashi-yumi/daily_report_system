@@ -17,7 +17,8 @@ import models.validators.ReportValidator;
 public class ReportService extends ServiceBase {
 
     /**
-     * 指定した従業員が作成した日報データを、指定されたページ数の一覧画面に表示する分取得しReportViewのリストで返却する
+     * 指定した従業員が作成した日報データを、指定されたページ数の一覧画面に表示する分取得し
+     * ReportViewのリストで返却する
      * @param employee 従業員
      * @param page ページ数
      * @return 一覧画面に表示するデータのリスト

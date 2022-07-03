@@ -7,20 +7,23 @@ import java.util.List;
 import javax.servlet.ServletException;
 
 import actions.views.EmployeeView;
+import actions.views.LikeView;
 import actions.views.ReportView;
 import constants.AttributeConst;
 import constants.ForwardConst;
 import constants.JpaConst;
 import constants.MessageConst;
+import services.LikeService;
 import services.ReportService;
 
 /**
  * 日報に関する処理を行うActionクラス
- *
  */
 public class ReportAction extends ActionBase {
 
     private ReportService service;
+
+    private LikeService likeService;
 
     /**
      * メソッドを実行する
@@ -29,10 +32,12 @@ public class ReportAction extends ActionBase {
     public void process() throws ServletException, IOException {
 
         service = new ReportService();
+        likeService = new LikeService();
 
         //メソッドを実行
         invoke();
         service.close();
+        likeService.close();
     }
 
     /**
@@ -112,7 +117,8 @@ public class ReportAction extends ActionBase {
                     getRequestParam(AttributeConst.REP_TITLE),
                     getRequestParam(AttributeConst.REP_CONTENT),
                     null,
-                    null);
+                    null,
+                    0); // ←この部分を追加
 
             //日報情報登録
             List<String> errors = service.create(rv);
@@ -160,6 +166,7 @@ public class ReportAction extends ActionBase {
             forward(ForwardConst.FW_REP_SHOW);
         }
     }
+
     /**
      * 編集画面を表示する
      * @throws ServletException
@@ -186,8 +193,8 @@ public class ReportAction extends ActionBase {
             //編集画面を表示
             forward(ForwardConst.FW_REP_EDIT);
         }
-
     }
+
     /**
      * 更新を行う
      * @throws ServletException
@@ -230,5 +237,75 @@ public class ReportAction extends ActionBase {
             }
         }
     }
+
+    /**
+     * いいね一覧画面（詳細）を表示する
+     * @throws ServletException
+     * @throws IOException
+     */
+    public void likeSrevice() throws ServletException, IOException {
+
+      //指定されたページ数の一覧画面に表示する日報データを取得
+        int page = getPage();
+        List<LikeView> lv = likeService.getAllPerPage(page);
+
+      //日報のIDを条件にlikeService検索メソッドを呼び出しいいねデータを取得するパラメータ
+        ReportView rv = service.findOne(toNumber(getRequestParam(AttributeConst.REP_ID)));
+
+      //全てのいいねした人の件数を取得
+        long likesCount = likeService.countAll();
+
+        putRequestScope(AttributeConst.REPORT, rv); //取得した日報データ
+        putRequestScope(AttributeConst.LIK_COUNT, likesCount); //全ての日報データの件数
+        putRequestScope(AttributeConst.PAGE, page); //ページ数
+        putRequestScope(AttributeConst.MAX_ROW, JpaConst.ROW_PER_PAGE); //1ページに表示するレコードの数
+
+        //セッションにフラッシュメッセージが設定されている場合はリクエストスコープに移し替え、セッションからは削除する
+        String flush = getSessionScope(AttributeConst.FLUSH);
+        if (flush != null) {
+            putRequestScope(AttributeConst.FLUSH, flush);
+            removeSessionScope(AttributeConst.FLUSH);
+        }
+
+
+      //いいねした人一覧画面を表示
+        if (rv == null) {
+            //該当の日報データが存在しない場合はエラー画面を表示
+            forward(ForwardConst.FW_ERR_UNKNOWN);
+
+        } else {
+        forward(ForwardConst.FW_LIK_SHOW);
+
+        //一覧画面にリダイレクト
+        redirect(ForwardConst.ACT_REP, ForwardConst.CMD_INDEX);
+
+          }
+  }
+
+            /**
+             * いいね数の更新を行う
+             * @throws ServletException
+             * @throws IOException
+             */
+            public void likeCount() throws ServletException, IOException {
+
+                //idを条件に日報データを取得する
+                    ReportView rv1 = service.findOne(toNumber(getRequestParam(AttributeConst.REP_ID)));
+
+                    // いいね数を１加算する
+                    rv1.setLikeCount(1 + rv1.getLikeCount());
+
+                   //日報データを更新する
+                     service.update(rv1);
+
+                    //セッションにいいねしました。のフラッシュメッセージを設定
+                    putSessionScope(AttributeConst.FLUSH, MessageConst.I_LIKECOUNTED.getMessage());
+
+                    //一覧画面にリダイレクト
+                    redirect(ForwardConst.ACT_REP, ForwardConst.CMD_INDEX);
+
+            }
+
+
 
 }
